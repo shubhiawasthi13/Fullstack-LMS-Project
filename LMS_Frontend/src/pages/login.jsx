@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,27 +6,51 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import { useState } from "react"
+  useLoginUserMutation,
+  useRegisterUserMutation,
+} from "@/features/api/authApi";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const login = () => {
   const [signupInput, setSignupInput] = useState({
     name: "",
     email: "",
-    password: ""
-  })
+    password: "",
+  });
   const [loginInput, setLoginInput] = useState({
     email: "",
-    password: ""
-  })
+    password: "",
+  });
+
+  const [
+    registerUser,
+    {
+      data: regData,
+      error: regError,
+      isLoading: regisLoading,
+      isSuccess: regIsSuccess,
+    },
+  ] = useRegisterUserMutation();
+
+  const [
+    loginUser,
+    {
+      data: logData,
+      error: logError,
+      isLoading: logisLoading,
+      isSuccess: logIsSuccess,
+    },
+  ] = useLoginUserMutation();
+
+  const navigate = useNavigate();
 
   const changeInputHandler = (e, type) => {
     const { name, value } = e.target;
@@ -35,26 +59,53 @@ const login = () => {
     } else {
       setLoginInput({ ...loginInput, [name]: value });
     }
-  }
+  };
 
-  const handleRegisteration = (type) => {
-    const inputData = type === "signup" ? signupInput : loginInput
-    console.log(inputData)
-  }
+  const handleRegisteration = async (type) => {
+    const inputData = type === "signup" ? signupInput : loginInput;
+    console.log(inputData);
+    const action = type === "signup" ? registerUser : loginUser;
+    await action(inputData);
+  };
+
+  useEffect(() => {
+    if (regIsSuccess && regData) {
+      toast.success(regData.message || "Register Succes");
+    }
+    if (logIsSuccess && logData) {
+      toast.success(logData.message || "Login Succes");
+    }
+    navigate("/")
+    if (regError) {
+      toast.error(regData.message || "Register Failed");
+    }
+    if (logError) {
+      toast.error(logData.message || "Login Failed");
+    }
+  }, [logisLoading, regisLoading, logData, regData, logError, regError]);
 
   return (
-    <div className="flex justify-center w-full">
+    <div className="flex justify-center w-full mt-10">
       <div className="w-full max-w-sm flex flex-col gap-6">
         <Tabs defaultValue="account">
           <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="signup" className="w-full">Signup</TabsTrigger>
-            <TabsTrigger value="login" className="w-full">Login</TabsTrigger>
+            <TabsTrigger value="signup" className="w-full">
+              Signup
+            </TabsTrigger>
+            <TabsTrigger value="login" className="w-full">
+              Login
+            </TabsTrigger>
           </TabsList>
 
           {/* Signup Form */}
           <TabsContent value="signup">
             <Card>
-              <form onSubmit={(e) => { e.preventDefault(); handleRegisteration("signup"); }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleRegisteration("signup");
+                }}
+              >
                 <CardHeader>
                   <CardTitle>Signup</CardTitle>
                   <CardDescription>Create a new account</CardDescription>
@@ -101,7 +152,16 @@ const login = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit">Signup</Button>
+                  <Button type="submit" disabled={regisLoading}>
+                    {regisLoading ? (
+                      <>
+                        <Loader2 />
+                        Please Wait
+                      </>
+                    ) : (
+                      "signup"
+                    )}
+                  </Button>
                 </CardFooter>
               </form>
             </Card>
@@ -110,15 +170,28 @@ const login = () => {
           {/* Login Form */}
           <TabsContent value="login">
             <Card>
-              <form onSubmit={(e) => { e.preventDefault(); handleRegisteration("login"); }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleRegisteration("login");
+                }}
+              >
                 <CardHeader>
                   <CardTitle>Login</CardTitle>
                   <CardDescription>Login into your account</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-6">
                   {/* Dummy fields to suppress browser autofill */}
-                  <input type="text" name="fakeusernameremembered" style={{ display: "none" }} />
-                  <input type="password" name="fakepasswordremembered" style={{ display: "none" }} />
+                  <input
+                    type="text"
+                    name="fakeusernameremembered"
+                    style={{ display: "none" }}
+                  />
+                  <input
+                    type="password"
+                    name="fakepasswordremembered"
+                    style={{ display: "none" }}
+                  />
 
                   <div className="grid gap-3">
                     <Label htmlFor="tabs-demo-email-login">Email</Label>
@@ -146,17 +219,24 @@ const login = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit">Login</Button>
+                  <Button type="submit" disabled={logisLoading}>
+                    {logisLoading ? (
+                      <>
+                        <Loader2 />
+                        Please Wait
+                      </>
+                    ) : (
+                      "login"
+                    )}
+                  </Button>
                 </CardFooter>
               </form>
             </Card>
           </TabsContent>
-
         </Tabs>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default login
-
+export default login;
