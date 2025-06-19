@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-const login = () => {
+const Login = () => {
   const [signupInput, setSignupInput] = useState({
     name: "",
     email: "",
@@ -74,8 +74,9 @@ const login = () => {
     }
     if (logIsSuccess && logData) {
       toast.success(logData.message || "Login Succes");
+        navigate("/")
     }
-    navigate("/")
+  
     if (regError) {
       toast.error(regData.message || "Register Failed");
     }
@@ -239,4 +240,4 @@ const login = () => {
   );
 };
 
-export default login;
+export default Login;

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Moon, Sun, BrainCircuit, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "../../theme/ThemeContext.jsx";
+import { Link, useNavigate } from "react-router-dom";
+import { useLogoutUserMutation } from "../../features/api/authApi.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,17 +13,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 export default function Navbar() {
- const { darkMode, setDarkMode } = useTheme();
+  const { darkMode, setDarkMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const user = true;
   const role = "instructor";
+  const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success(data.message || "user logout");
+      navigate("/");
+    }
+  }, [isSuccess]);
+
+  const logoutHandler = async () => {
+    await logoutUser();
+  };
 
   return (
-  <>
-   <nav className="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-md">
-        <div className="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
+    <>
+      <nav className="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-md z-50 relative sticky top-0">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <BrainCircuit
@@ -31,27 +47,41 @@ export default function Navbar() {
             <span className="text-xl font-bold">GrowSkill</span>
           </div>
 
-          {/* Right Icons */}
+          {/* Right Side Icons */}
           <div className="flex items-center gap-4">
-            {/* Login/Signup or Avatar – Hidden on Mobile */}
+            {/* Desktop Only: Avatar or Auth Buttons */}
             <div className="hidden md:flex items-center gap-2">
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Avatar>
+                    <Avatar className="cursor-pointer">
                       <AvatarImage src="https://github.com/shadcn.png" />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-70" align="start">
+                  <DropdownMenuContent className="w-64" align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuGroup>
-                      <DropdownMenuItem>My Learning</DropdownMenuItem>
-                      <DropdownMenuItem>Edit Profile</DropdownMenuItem>
-                      <DropdownMenuItem>Log out</DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link to="/my-learning" className="w-full">
+                          My Learning
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link to="/profile" className="w-full">
+                          Edit Profile
+                        </Link>
+                      </DropdownMenuItem>
                       {role === "instructor" && (
-                        <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Link to="/dashboard" className="w-full">
+                            Dashboard
+                          </Link>
+                        </DropdownMenuItem>
                       )}
+                      <DropdownMenuItem onClick={logoutHandler}>
+                        Log out
+                      </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -64,14 +94,14 @@ export default function Navbar() {
             </div>
 
             {/* Dark Mode Toggle */}
-         <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-        >
-          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            >
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Toggle */}
             <button
               className="md:hidden p-2"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -81,22 +111,47 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Nav Menu */}
-       {menuOpen && (
-  <ul className="md:hidden px-6 pb-4 flex flex-col gap-3 font-medium bg-white dark:bg-gray-900 absolute top-[64px] left-0 w-full z-50 shadow-md">
-    <li className="hover:text-blue-500 cursor-pointer">My Learning</li>
-    <li className="hover:text-blue-500 cursor-pointer">Edit Profile</li>
-    <li className="hover:text-blue-500 cursor-pointer">Log out</li>
-    {role === "instructor" && (
-      <li className="hover:text-blue-500 cursor-pointer">Dashboard</li>
-    )}
-  </ul>
-)}
-
+        {/* Mobile Navigation Menu */}
+        {menuOpen && (
+          <ul className="md:hidden px-6 pb-4 pt-2 flex flex-col gap-3 font-medium bg-white dark:bg-gray-900 absolute w-full left-0 z-40 shadow-md">
+            <li>
+              <Link
+                to="/my-learning"
+                className="block py-2 hover:text-blue-500 transition"
+                onClick={() => setMenuOpen(false)}
+              >
+                My Learning
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/profile"
+                className="block py-2 hover:text-blue-500 transition"
+                onClick={() => setMenuOpen(false)}
+              >
+                Edit Profile
+              </Link>
+            </li>
+            {role === "instructor" && (
+              <li>
+                <Link
+                  to="/dashboard"
+                  className="block py-2 hover:text-blue-500 transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              </li>
+            )}
+            <li
+              className="block py-2 hover:text-blue-500 cursor-pointer"
+              onClick={logoutHandler}
+            >
+              Log out
+            </li>
+          </ul>
+        )}
       </nav>
-  </>
-     
-     
-   
+    </>
   );
 }
