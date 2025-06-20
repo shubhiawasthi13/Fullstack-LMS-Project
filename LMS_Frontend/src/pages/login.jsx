@@ -74,21 +74,21 @@ const Login = () => {
     }
     if (logIsSuccess && logData) {
       toast.success(logData.message || "Login Succes");
-        navigate("/")
+      navigate("/");
     }
-  
+
     if (regError) {
-      toast.error(regData.message || "Register Failed");
+      toast.error(regError.data.message || "Register Failed");
     }
     if (logError) {
-      toast.error(logData.message || "Login Failed");
+      toast.error(logError.data.message || "Login Failed");
     }
   }, [logisLoading, regisLoading, logData, regData, logError, regError]);
 
   return (
     <div className="flex justify-center w-full mt-10">
       <div className="w-full max-w-sm flex flex-col gap-6">
-        <Tabs defaultValue="account">
+        <Tabs defaultValue="login">
           <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="signup" className="w-full">
               Signup

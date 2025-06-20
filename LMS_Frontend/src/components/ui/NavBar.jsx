@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "../../theme/ThemeContext.jsx";
 import { Link, useNavigate } from "react-router-dom";
 import { useLogoutUserMutation } from "../../features/api/authApi.js";
+import { userLoggedOut } from "@/features/authSlice.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,24 +15,29 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+
 
 export default function Navbar() {
   const { darkMode, setDarkMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const user = true;
+  const {user} = useSelector(store=>store.auth);
   const role = "instructor";
   const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
+const dispatch = useDispatch();
   useEffect(() => {
     if (isSuccess) {
       toast.success(data.message || "user logout");
+      dispatch(userLoggedOut())
       navigate("/");
     }
   }, [isSuccess]);
 
   const logoutHandler = async () => {
     await logoutUser();
+    
   };
 
   return (
@@ -44,7 +50,7 @@ export default function Navbar() {
               size={30}
               className="text-blue-600 dark:text-blue-400"
             />
-            <span className="text-xl font-bold">GrowSkill</span>
+            <span className="text-xl font-bold"><Link to = "/">GrowSkill</Link></span>
           </div>
 
           {/* Right Side Icons */}
@@ -55,7 +61,7 @@ export default function Navbar() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Avatar className="cursor-pointer">
-                      <AvatarImage src="https://github.com/shadcn.png" />
+                      <AvatarImage src={user?.photoUrl || "https://github.com/shadcn.png"} />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
@@ -74,21 +80,27 @@ export default function Navbar() {
                       </DropdownMenuItem>
                       {role === "instructor" && (
                         <DropdownMenuItem>
-                          <Link to="/dashboard" className="w-full">
+                           {user?.role === "instructor" &&(
+                             <Link to="/dashboard" className="w-full">
                             Dashboard
                           </Link>
+                           )
+                           }
+
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={logoutHandler}>
-                        Log out
+                      <Button>  Log out</Button>
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
                 <>
-                  <Button variant="outline">Login</Button>
-                  <Button>Signup</Button>
+                  <Button variant="outline"><Link to="/login" className="w-full">
+                          login/signup
+                        </Link></Button>
+                  {/* <Button>Signup</Button> */}
                 </>
               )}
             </div>
@@ -112,45 +124,64 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Navigation Menu */}
-        {menuOpen && (
-          <ul className="md:hidden px-6 pb-4 pt-2 flex flex-col gap-3 font-medium bg-white dark:bg-gray-900 absolute w-full left-0 z-40 shadow-md">
-            <li>
-              <Link
-                to="/my-learning"
-                className="block py-2 hover:text-blue-500 transition"
-                onClick={() => setMenuOpen(false)}
-              >
-                My Learning
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/profile"
-                className="block py-2 hover:text-blue-500 transition"
-                onClick={() => setMenuOpen(false)}
-              >
-                Edit Profile
-              </Link>
-            </li>
-            {role === "instructor" && (
-              <li>
-                <Link
-                  to="/dashboard"
-                  className="block py-2 hover:text-blue-500 transition"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              </li>
-            )}
-            <li
-              className="block py-2 hover:text-blue-500 cursor-pointer"
-              onClick={logoutHandler}
+      {menuOpen && (
+  <ul className="md:hidden px-6 pb-4 pt-2 flex flex-col gap-3 font-medium bg-white dark:bg-gray-900 absolute w-full left-0 z-40 shadow-md">
+    {user ? (
+      <>
+        <li>
+          <Link
+            to="/my-learning"
+            className="block py-2 hover:text-blue-500 transition"
+            onClick={() => setMenuOpen(false)}
+          >
+            My Learning
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/profile"
+            className="block py-2 hover:text-blue-500 transition"
+            onClick={() => setMenuOpen(false)}
+          >
+            Edit Profile
+          </Link>
+        </li>
+        {user?.role === "instructor" && (
+          <li>
+            <Link
+              to="/dashboard"
+              className="block py-2 hover:text-blue-500 transition"
+              onClick={() => setMenuOpen(false)}
             >
-              Log out
-            </li>
-          </ul>
+              Dashboard
+            </Link>
+          </li>
         )}
+        <li
+          className="block py-2 hover:text-blue-500 cursor-pointer"
+          onClick={() => {
+            logoutHandler();
+            setMenuOpen(false);
+          }}
+        >
+          <Button>Log out</Button>
+         
+        </li>
+      </>
+    ) : (
+      <li>
+        <Link
+          to="/login"
+          className="block py-2 hover:text-blue-500 transition"
+          onClick={() => setMenuOpen(false)}
+        >
+     <Button>Login / Signup</Button>
+        </Link>
+      </li>
+    )}
+  </ul>
+)}
+
       </nav>
     </>
   );
