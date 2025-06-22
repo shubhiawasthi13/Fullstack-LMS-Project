@@ -7,7 +7,10 @@ import Hero from "./pages/student/Hero";
 import Courses from "./pages/student/Courses";
 import MyLearning from "./pages/student/myLearning";
 import Profile from "./pages/student/Profile";
-
+import Sidebar from "./pages/admin/sidebar";
+import Dashboard from "./pages/admin/dashboard";
+import Coursetable from "./pages/admin/course/courseTable";
+import AddCourse from "./pages/admin/course/addCourse";
 const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -18,22 +21,40 @@ const appRouter = createBrowserRouter([
         element: (
           <>
             <Hero />
-            <Courses/>
+            <Courses />
           </>
         ),
       },
       {
-        path:"login",
-        element:<Login/>
+        path: "login",
+        element: <Login />,
       },
-       {
-        path:"my-learning",
-        element:<MyLearning/>
+      {
+        path: "my-learning",
+        element: <MyLearning />,
       },
-       {
-        path:"profile",
-        element:<Profile/>
-      }
+      {
+        path: "profile",
+        element: <Profile />,
+      },
+      {
+        path: "admin",
+        element: <Sidebar />,
+        children: [
+          {
+            path: "dashboard",
+            element: <Dashboard />,
+          },
+          {
+            path: "course",
+            element: <Coursetable />,
+          },
+          {
+            path: "course/create",
+            element: <AddCourse />,
+          },
+        ],
+      },
     ],
   },
 ]);
@@ -41,7 +62,7 @@ const appRouter = createBrowserRouter([
 function App() {
   return (
     <>
-     <RouterProvider router={appRouter}/>
+      <RouterProvider router={appRouter} />
     </>
   );
 }
