@@ -47,7 +47,7 @@ function CourseTable() {
                     {course.isPublished ? "Published" : "Draft"}
                   </Badge>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4" onClick= {() =>navigate(`${course._id}`)}>
                   <button>
                     <Edit className="w-5 h-5" />
                   </button>
