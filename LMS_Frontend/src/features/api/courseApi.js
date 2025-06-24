@@ -40,6 +40,38 @@ export const courseApi = createApi({
       }),
       providesTags: ["Refetch-Creator-Course"],
     }),
+    createLecture: builder.mutation({
+      query: ({ lectureTitle, courseId }) => ({
+        url: `/${courseId}/lectures`,
+        method: "POST",
+        body: { lectureTitle },
+      }),
+    }),
+    getCourseLecture: builder.query({
+      query: (courseId) => ({
+        url: `/${courseId}/lectures`,
+        method: "GET",
+      }),
+    }),
+    editLecture: builder.mutation({
+      query: ({
+        lectureTitle,
+        videoInfo,
+        isPreviewFree,
+        courseId,
+        lectureId,
+      }) => ({
+        url: `/${courseId}/lectures/${lectureId}`,
+        method: "POST",
+        body: { lectureTitle, videoInfo, isPreviewFree, courseId, lectureId },
+      }),
+    }),
+      removeLecture: builder.mutation({
+      query: (lectureId) => ({
+        url: `/lectures/${lectureId}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -48,4 +80,8 @@ export const {
   useGetCreatorCourseQuery,
   useEditCourseMutation,
   useGetCourseByIdQuery,
+  useCreateLectureMutation,
+  useGetCourseLectureQuery,
+  useEditLectureMutation,
+  useRemoveLectureMutation,
 } = courseApi;
