@@ -3,6 +3,7 @@ import isAuthenticated from "../middlewares/isAuthenticated.js";
 import {
   createCourse,
   createLecture,
+  deleteCourse,
   editCourse,
   getCourseById,
   getCourseLecture,
@@ -22,9 +23,12 @@ router
 router.route("/:courseId").get(isAuthenticated, getCourseById);
 router.route("/:courseId/lectures").post(isAuthenticated, createLecture);
 router.route("/:courseId/lectures").get(isAuthenticated, getCourseLecture);
-router.route("/:courseId/lectures/:lectureId").post(isAuthenticated, updateLecture);
+router
+  .route("/:courseId/lectures/:lectureId")
+  .post(isAuthenticated, updateLecture);
 router.route("/lectures/:lectureId").delete(isAuthenticated, removeLecture);
 router.route("/lectures/:lectureId").get(isAuthenticated, getLectureById);
 router.route("/:courseId").patch(isAuthenticated, togglePublishCourse);
+router.route("/:courseId").delete(isAuthenticated, deleteCourse);
 
 export default router;

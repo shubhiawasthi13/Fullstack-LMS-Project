@@ -23,6 +23,7 @@ import {
   useEditCourseMutation,
   useGetCourseByIdQuery,
   usePublishCourseMutation,
+  useDeleteCourseMutation,
 } from "@/features/api/courseApi";
 import { toast } from "sonner";
 
@@ -48,6 +49,24 @@ function CourseTab() {
       }
     } catch (error) {
       toast.error("failed to update status");
+    }
+  };
+
+  const [deleteCourse, { isLoading: deleteLoading }] =
+    useDeleteCourseMutation();
+  const deleteCourseHandler = async () => {
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
+
+    try {
+      const res = await deleteCourse(courseId);
+      if (res.data?.success) {
+        toast.success(res.data.message || "Course deleted successfully");
+        navigate("/admin/course");
+      } else {
+        toast.error(res.error?.data?.message || "Failed to delete course");
+      }
+    } catch (err) {
+      toast.error("Something went wrong");
     }
   };
 
@@ -131,6 +150,7 @@ function CourseTab() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 ">
             <Button
+              disabled={courseByIdData.course.lectures.length == 0}
               className={`${
                 courseByIdData.course.isPublished
                   ? "bg-yellow-600 hover:bg-yellow-700 text-white"
@@ -145,8 +165,19 @@ function CourseTab() {
               {courseByIdData.course.isPublished ? "Unpublish" : "Publish"}
             </Button>
 
-            <Button className="bg-red-600 hover:bg-red-700 text-white">
-              Remove Course
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={deleteCourseHandler}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <>
+                  <Loader2 className="animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                "Remove Course"
+              )}
             </Button>
           </div>
         </CardHeader>
