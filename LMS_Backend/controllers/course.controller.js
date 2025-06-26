@@ -1,5 +1,9 @@
 import { Course } from "../modal/course.modal.js";
-import { deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
+import {
+  deleteMediaFromCloudinary,
+  deleteVideoFromCloudinary,
+  uploadMedia,
+} from "../utils/cloudinary.js";
 import { Lecture } from "../modal/lecture.modal.js";
 
 export const createCourse = async (req, res) => {
@@ -196,7 +200,7 @@ export const getCourseLecture = async (req, res) => {
 
 export const updateLecture = async (req, res) => {
   try {
-    const { lectureTitle, videoInfo, isPriviewFree } = req.body;
+    const { lectureTitle, videoInfo, isPreviewFree } = req.body;
     const { courseId, lectureId } = req.params;
     const lecture = await Lecture.findById(lectureId);
     if (!lecture) {
@@ -209,7 +213,7 @@ export const updateLecture = async (req, res) => {
     if (lectureTitle) lecture.lectureTitle = lectureTitle;
     if (videoInfo.videoUrl) lecture.videoUrl = videoInfo.videoUrl;
     if (videoInfo.publicId) lecture.publicId = videoInfo.publicId;
-    if (isPriviewFree) lecture.isPreviewFree = isPreviewFree;
+    if (isPreviewFree) lecture.isPreviewFree = isPreviewFree;
     await lecture.save();
 
     // check course still has the lecture id if it was not alreday had added
@@ -244,15 +248,15 @@ export const removeLecture = async (req, res) => {
     }
 
     // Delete lecture from cloudinary
-    if(lecture.publicId){
-      await deleteVideoFromCloudinary(lecture.publicId)
+    if (lecture.publicId) {
+      await deleteVideoFromCloudinary(lecture.publicId);
     }
-    
+
     // Delete lecture from course
     await Course.updateOne(
-      {lectures:lectureId},
-      {$pull:{lectures:lectureId}}
-    )
+      { lectures: lectureId },
+      { $pull: { lectures: lectureId } }
+    );
     return res.status(200).json({
       success: true,
       message: "Lecture remove successfully",
@@ -276,17 +280,51 @@ export const getLectureById = async (req, res) => {
         message: "Lecture not found",
       });
     }
-     return res.status(200).json({
-        success: true,
-       lecture
-      });
-
-
+    return res.status(200).json({
+      success: true,
+      lecture,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
       success: false,
       message: "Failed to get lecture by id",
+    });
+  }
+};
+
+// publish unpublish logic
+export const togglePublishCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { publish } = req.query;
+
+    const course = await Course.findById(courseId); // ✅ Await here
+
+    if (!course) {
+      return res.status(400).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    // Toggle publish status
+    course.isPublished = publish === "true";
+    await course.save();
+
+    const statusMessage = course.isPublished
+      ? "Course published"
+      : "Course unpublished";
+
+    return res.status(200).json({
+      success: true,
+      message: statusMessage,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to publish course",
     });
   }
 };

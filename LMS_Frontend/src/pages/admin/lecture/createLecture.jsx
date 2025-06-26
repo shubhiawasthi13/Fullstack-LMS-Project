@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useParams } from "react-router-dom";
-import { Loader2, Edit} from "lucide-react";
+import { Loader2, Edit } from "lucide-react";
 
 import {
   useCreateLectureMutation,
@@ -79,15 +79,10 @@ function CreateLecture() {
           </Button>
         </div>
       </form>
-  
-<div className="mt-10">
+
+     <div className="mt-10">
   <h2 className="text-xl font-semibold mb-4">
-    Lecturs{" "}
-    {!lectureLoading && lectureData?.lectures?.length > 0 && (
-      <span className="text-sm font-normal text-gray-500">
-        ({lectureData.lectures.length})
-      </span>
-    )}
+    Lectures
   </h2>
 
   {lectureLoading ? (
@@ -97,24 +92,33 @@ function CreateLecture() {
     </div>
   ) : lectureData?.lectures?.length > 0 ? (
     <ul className="space-y-2">
-      {lectureData.lectures.map((lecture, index) => (
-        <li
-          key={lecture._id}
-          className="bg-white dark:bg-gray-800 p-4 rounded shadow flex justify-between items-center"
-        >
-          <div>
-            <span className="font-medium">Lecture-{index + 1}. </span>
-            {lecture.lectureTitle}
-          </div>
-          <button
-            onClick={() => navigate(`/admin/course/${courseId}/lectures/${lecture._id}`)}
-            className="text-blue-600 hover:text-blue-800"
-            title="Edit Lecture"
+      {
+        // ✅ Filter duplicate lectures by _id
+        Array.from(
+          new Map(
+            lectureData.lectures.map((lecture) => [lecture._id, lecture])
+          ).values()
+        ).map((lecture, index) => (
+          <li
+            key={`${lecture._id}-${index}`} // ✅ Safe unique key
+            className="bg-white dark:bg-gray-800 p-4 rounded shadow flex justify-between items-center"
           >
-            <Edit size={20} />
-          </button>
-        </li>
-      ))}
+            <div>
+              <span className="font-medium">Lecture-{index + 1}. </span>
+              {lecture.lectureTitle}
+            </div>
+            <button
+              onClick={() =>
+                navigate(`/admin/course/${courseId}/lectures/${lecture._id}`)
+              }
+              className="text-blue-600 hover:text-blue-800"
+              title="Edit Lecture"
+            >
+              <Edit size={20} />
+            </button>
+          </li>
+        ))
+      }
     </ul>
   ) : (
     <p className="text-gray-500">No lectures found.</p>

@@ -22,11 +22,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   useEditCourseMutation,
   useGetCourseByIdQuery,
+  usePublishCourseMutation,
 } from "@/features/api/courseApi";
 import { toast } from "sonner";
 
 function CourseTab() {
-  const isPublished = true;
   const navigate = useNavigate();
 
   const params = useParams();
@@ -37,6 +37,19 @@ function CourseTab() {
 
   const { data: courseByIdData, isLoading: courseByIdLoading } =
     useGetCourseByIdQuery(courseId);
+
+  const [publishCourse, {}] = usePublishCourseMutation();
+
+  const publishStatusHandler = async (action) => {
+    try {
+      const response = await publishCourse({ courseId, query: action });
+      if (response.data) {
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      toast.error("failed to update status");
+    }
+  };
 
   const [input, setInput] = useState({
     courseTitle: "",
@@ -116,11 +129,25 @@ function CourseTab() {
             <CardTitle>Basic Course Info</CardTitle>
             <CardDescription>Make changes to your course here.</CardDescription>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-            <Button variant={isPublished ? "secondary" : "default"}>
-              {isPublished ? "Unpublish" : "Publish"}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 ">
+            <Button
+              className={`${
+                courseByIdData.course.isPublished
+                  ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
+              onClick={() =>
+                publishStatusHandler(
+                  courseByIdData.course.isPublished ? "false" : "true"
+                )
+              }
+            >
+              {courseByIdData.course.isPublished ? "Unpublish" : "Publish"}
             </Button>
-            <Button variant="destructive">Remove Course</Button>
+
+            <Button className="bg-red-600 hover:bg-red-700 text-white">
+              Remove Course
+            </Button>
           </div>
         </CardHeader>
 
