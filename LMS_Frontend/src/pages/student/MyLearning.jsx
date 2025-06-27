@@ -4,7 +4,7 @@ import Course from './Course'; // Reuse your existing course card
 
 function MyLearning() {
   const isLoading = false;
-  const myCourses = [1,2]; // Replace with real course data
+  const myCourses = []; 
 
 
   return (
@@ -19,7 +19,7 @@ function MyLearning() {
                 <CourseSkeleton key={index} />
               )):
               myCourses.length === 0 ? (<p>You are not enrolled in any courses</p>) :(
-                 myCourses.map((course, index) => <Course key={index} />)
+                 myCourses.map((course, index) => <Course key={index} course={course} />)
               )
             
         }
