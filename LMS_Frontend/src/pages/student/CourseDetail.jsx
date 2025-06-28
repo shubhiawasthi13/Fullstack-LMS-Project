@@ -4,9 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PlayCircle, Lock } from "lucide-react";
 import ReactPlayer from "react-player";
 import BuyCourseButton from "@/components/ui/BuyCourseButton";
+import { useParams } from "react-router-dom";
 
 function CourseDetail() {
   const puchasedCourse = false;
+  const params= useParams();
+  const courseId = params.courseId
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-4 py-6">
       <div className="max-w-6xl mx-auto">
@@ -80,7 +83,7 @@ function CourseDetail() {
                   Continue
                 </Button>
               ) : (
-                <BuyCourseButton/>
+                <BuyCourseButton courseId={courseId}/>
               )}
             </CardContent>
           </Card>
