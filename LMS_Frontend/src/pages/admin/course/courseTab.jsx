@@ -272,13 +272,13 @@ function CourseTab() {
             </div>
 
             <div className="space-y-2">
-              <Label>Price in (INR)</Label>
+              <Label>Price in (US)</Label>
               <Input
                 type="text"
                 name="coursePrice"
                 value={input.coursePrice}
                 onChange={changeEventHandler}
-                placeholder="299"
+                placeholder="$299"
               />
             </div>
           </div>

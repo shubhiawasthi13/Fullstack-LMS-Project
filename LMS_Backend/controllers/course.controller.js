@@ -218,10 +218,11 @@ export const updateLecture = async (req, res) => {
 
     // check course still has the lecture id if it was not alreday had added
     const course = await Course.findById(courseId);
-    if (course && course.lectures.includes(lecture._id)) {
+    if (course && !course.lectures.includes(lecture._id)) {
       course.lectures.push(lecture._id);
-      course.save();
+      await course.save();
     }
+
     return res.status(200).json({
       success: true,
       message: "Lecture updated successfully",
@@ -329,7 +330,6 @@ export const togglePublishCourse = async (req, res) => {
   }
 };
 
-
 export const deleteCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -342,7 +342,7 @@ export const deleteCourse = async (req, res) => {
       });
     }
 
-    // Delete all associated lectures
+    // 🔥 Delete all associated lectures and videos from Cloudinary
     for (const lecture of course.lectures) {
       if (lecture.publicId) {
         await deleteVideoFromCloudinary(lecture.publicId);
@@ -350,18 +350,23 @@ export const deleteCourse = async (req, res) => {
       await Lecture.findByIdAndDelete(lecture._id);
     }
 
-    // Delete course thumbnail from Cloudinary
+    // 🔥 Delete course thumbnail from Cloudinary
     if (course.courseThumbnail) {
       const publicId = course.courseThumbnail.split("/").pop().split(".")[0];
       await deleteMediaFromCloudinary(publicId);
     }
 
-    // Delete the course
+    // 🔥 Delete course purchases
+    await CoursePurchase.deleteMany({ courseId });
+
+    // TODO: Delete other related data like reviews, progress, etc.
+
+    // 🔥 Delete the course itself
     await Course.findByIdAndDelete(courseId);
 
     return res.status(200).json({
       success: true,
-      message: "Course and associated lectures deleted successfully",
+      message: "Course and all related data deleted successfully",
     });
   } catch (error) {
     console.error("Delete Course Error:", error);
@@ -375,17 +380,19 @@ export const deleteCourse = async (req, res) => {
 
 export const getPublishedCourse = async (req, res) => {
   try {
-   
-const courses = await Course.find({isPublished:true}).populate({path:"creator", select:"name photoUrl"});
-if(!courses){
-   return res.status(400).json({
-      success: false,
-      message: "Course not found",
+    const courses = await Course.find({ isPublished: true }).populate({
+      path: "creator",
+      select: "name photoUrl",
     });
-}
+    if (!courses) {
+      return res.status(400).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
     return res.status(200).json({
       success: true,
-      courses
+      courses,
     });
   } catch (error) {
     console.error("Delete Course Error:", error);

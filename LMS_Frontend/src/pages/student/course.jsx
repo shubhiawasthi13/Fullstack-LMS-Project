@@ -44,7 +44,7 @@ function Course({ course }) {
           {/* Price aligned right */}
           <div className="flex justify-end">
             <span className="text-md font-semibold text-green-700">
-              ₹{course.coursePrice}
+              ${course.coursePrice}
             </span>
           </div>
         </CardContent>

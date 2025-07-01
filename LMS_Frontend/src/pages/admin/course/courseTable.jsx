@@ -35,7 +35,7 @@ function CourseTable() {
                 className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <td className="px-6 py-4">{course.courseTitle}</td>
-                <td className="px-6 py-4">{course?.coursePrice || "NA"}</td>
+                <td className="px-6 py-4">${course?.coursePrice || "NA"}</td>
                 <td className="px-6 py-4">
                   <Badge
                     className={`${
