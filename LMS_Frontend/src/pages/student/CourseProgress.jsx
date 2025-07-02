@@ -1,78 +1,80 @@
+import { useGetCourseProgressQuery } from "@/features/api/courseProgressApi";
+import { CheckCircle2, CirclePlay } from "lucide-react";
 import React, { useState } from "react";
-import ReactPlayer from "react-player";
+import { useParams } from "react-router-dom";
 
 function CourseProgress() {
-  // Simulated lecture data (replace with API data)
-  const lectures = [
-    {
-      id: 1,
-      title: "Lecture 1: Introduction",
-      description: "An introduction to the course",
-      videoUrl: "/video/intro.mp4",
-      progress: 100,
-    },
-    {
-      id: 2,
-      title: "Lecture 2: Basics",
-      description: "Understanding the basics",
-      videoUrl: "/video/intro.mp4",
-      progress: 50,
-    },
-    {
-      id: 3,
-      title: "Lecture 3: Advanced Concepts",
-      description: "Diving deeper",
-      videoUrl: "/video/intro.mp4",
-      progress: 20,
-    },
-  ];
+  const params = useParams();
+  const { data, isLoading, isError } = useGetCourseProgressQuery(
+    params.courseId
+  );
+  const [currentLecture, setCurrentLecture] = useState(null);
 
-  const [selectedLecture, setSelectedLecture] = useState(lectures[0]);
+  if (isLoading) return <p className="text-center mt-10">Loading..........</p>;
+  if (isError || !data)
+    return <p className="text-center mt-10">Failed to load course details</p>;
+
+  const { courseDetails, progress, completed } = data.data;
+  const { courseTitle, lectures } = courseDetails;
+
+  const initialLecture =
+    currentLecture || (courseDetails.lectures && courseDetails.lectures[0]);
+
+  const isLectureCompleted = (lectureId) => {
+    return progress.some((prog) => prog.lectureId === lectureId && prog.viewed);
+  };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-4 py-6">
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Video Player */}
-        <div className="lg:col-span-2 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow">
-          <ReactPlayer
-            url={selectedLecture.videoUrl}
-            controls
-            width="100%"
-            height="400px"
-          />
-          <div className="p-4">
-            <h2 className="text-2xl font-bold mb-2">{selectedLecture.title}</h2>
-            <p className="text-gray-700 dark:text-gray-300">
-              {selectedLecture.description}
-            </p>
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-6 py-4 md:w-[90%] m-auto ">
+      {/* Top */}
+      <div className="flex justify-between items-center mb-2">
+        <div></div>
+        <button className="bg-black dark:bg-white text-white dark:text-black px-4 py-1 rounded shadow">
+          Completed
+        </button>
+      </div>
+
+      {/* Main */}
+      <div className="flex flex-col md:flex-row gap-6 min-h-[500px]">
+        {/* Left: Video + Title */}
+        <div className="md:w-[60%] bg-white dark:bg-gray-800 rounded shadow p-4">
+          <h2 className="text-2xl font-bold text-left mb-4">{courseTitle}</h2>
+
+          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded shadow text-left">
+            {`Lecture ${
+              courseDetails.lectures.findIndex(
+                (lec) => lec._id === (currentLecture?._id || initialLecture._id)
+              ) + 1
+            }: ${currentLecture?.lectureTitle || initialLecture.lectureTitle}`}
           </div>
+          <video
+            src={currentLecture?.videoUrl || initialLecture.videoUrl}
+            className="w-full"
+            controls
+          />
         </div>
 
         {/* Right: Lecture List */}
-        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow max-h-[600px] overflow-y-auto">
-          <h3 className="text-xl font-semibold mb-4">Lectures</h3>
-          {lectures.map((lecture) => (
-            <div
-              key={lecture.id}
-              className={`mb-3 p-3 rounded-md cursor-pointer transition ${
-                selectedLecture.id === lecture.id
-                  ? "bg-blue-100 dark:bg-blue-700"
-                  : "hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
-              onClick={() => setSelectedLecture(lecture)}
-            >
-              <h4 className="text-lg font-medium">{lecture.title}</h4>
-              <div className="h-2 w-full bg-gray-300 dark:bg-gray-700 rounded mt-1">
-                <div
-                  className="h-2 bg-blue-600 rounded"
-                  style={{ width: `${lecture.progress}%` }}
-                />
+        <div className="md:w-[40%] bg-white dark:bg-gray-800 rounded shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Course Lecture</h3>
+          <div className="space-y-4">
+            {lectures.map((lecture, idx) => (
+              <div
+                key={lecture._id}
+                onClick={() => setCurrentLecture(lecture)}
+                className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+              >
+                <span className="font-medium">{lecture.lectureTitle}</span>
+                <span className="flex items-center gap-2">
+                  {isLectureCompleted(lecture._id) ? (
+                    <CheckCircle2 size={20} className="text-green-600" />
+                  ) : (
+                    <CirclePlay size={20} className="text-blue-500" />
+                  )}
+                </span>
               </div>
-              <p className="text-xs text-right text-gray-600 dark:text-gray-400 mt-1">
-                {lecture.progress}% completed
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
