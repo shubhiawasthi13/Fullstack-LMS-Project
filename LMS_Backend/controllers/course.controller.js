@@ -5,6 +5,8 @@ import {
   uploadMedia,
 } from "../utils/cloudinary.js";
 import { Lecture } from "../modal/lecture.modal.js";
+import { CoursePurchase } from "../modal/coursePurchase.modal.js";
+
 
 export const createCourse = async (req, res) => {
   try {

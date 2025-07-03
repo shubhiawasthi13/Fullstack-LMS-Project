@@ -1,13 +1,38 @@
-import { useGetCourseProgressQuery } from "@/features/api/courseProgressApi";
+import {
+  useGetCourseProgressQuery,
+  useMarkedAsCompletedMutation,
+  useMarkedAsInCompletedMutation,
+  useUpdateLectureProgressMutation,
+} from "@/features/api/courseProgressApi";
 import { CheckCircle2, CirclePlay } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 function CourseProgress() {
   const params = useParams();
-  const { data, isLoading, isError } = useGetCourseProgressQuery(
-    params.courseId
-  );
+  const courseId = params.courseId;
+  const { data, isLoading, isError, refetch } =
+    useGetCourseProgressQuery(courseId);
+  const [updateLectureProgress] = useUpdateLectureProgressMutation();
+  const [markedAsCompleted, { isSuccess: makeCompleteSuccess }] =
+    useMarkedAsCompletedMutation();
+  const [markedAsInCompleted, { isSuccess: makeInCompleteSuccess }] =
+    useMarkedAsInCompletedMutation();
+
+  useEffect(() => {
+    if (makeCompleteSuccess) {
+      refetch();
+      toast.success("Course marked as completed!");
+    }
+  }, [makeCompleteSuccess]);
+
+  useEffect(() => {
+    if (makeInCompleteSuccess) {
+      refetch();
+      toast.success("Course marked as incomplete!");
+    }
+  }, [makeInCompleteSuccess]);
   const [currentLecture, setCurrentLecture] = useState(null);
 
   if (isLoading) return <p className="text-center mt-10">Loading..........</p>;
@@ -24,13 +49,45 @@ function CourseProgress() {
     return progress.some((prog) => prog.lectureId === lectureId && prog.viewed);
   };
 
+  const handleLectureProgress = async (lectureId) => {
+    updateLectureProgress({ courseId, lectureId });
+    refetch();
+  };
+  const handleSelectLecture = (lecture) => {
+    setCurrentLecture(lecture);
+    handleLectureProgress(lecture._id);
+  };
+
+  const handleCompleteCourse = async () => {
+    markedAsCompleted(courseId);
+  };
+  const handleInCompleteCourse = async () => {
+    markedAsInCompleted(courseId);
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-6 py-4 md:w-[90%] m-auto ">
       {/* Top */}
       <div className="flex justify-between items-center mb-2">
         <div></div>
-        <button className="bg-black dark:bg-white text-white dark:text-black px-4 py-1 rounded shadow">
-          Completed
+        <button
+          className={`px-4 py-1 rounded shadow flex items-center gap-2
+    ${
+      completed
+        ? "bg-green-600 text-white dark:bg-green-500"
+        : "bg-black dark:bg-white text-white dark:text-black"
+    }
+  `}
+          onClick={completed ? handleInCompleteCourse : handleCompleteCourse}
+        >
+          {completed ? (
+            <>
+              <CheckCircle2 size={20} />
+              <span>Completed</span>
+            </>
+          ) : (
+            "Mark as Completed"
+          )}
         </button>
       </div>
 
@@ -51,6 +108,9 @@ function CourseProgress() {
             src={currentLecture?.videoUrl || initialLecture.videoUrl}
             className="w-full"
             controls
+            onPlay={() =>
+              handleLectureProgress(currentLecture?._id || initialLecture._id)
+            }
           />
         </div>
 
@@ -61,15 +121,21 @@ function CourseProgress() {
             {lectures.map((lecture, idx) => (
               <div
                 key={lecture._id}
-                onClick={() => setCurrentLecture(lecture)}
-                className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                onClick={() => handleSelectLecture(lecture)}
+                className={`flex items-center justify-between p-4 border rounded-lg shadow cursor-pointer
+          ${
+            lecture._id === currentLecture?._id
+              ? "bg-blue-100 dark:bg-blue-600 border-blue-500"
+              : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+          }
+        `}
               >
                 <span className="font-medium">{lecture.lectureTitle}</span>
                 <span className="flex items-center gap-2">
                   {isLectureCompleted(lecture._id) ? (
-                    <CheckCircle2 size={20} className="text-green-600" />
+                    <CheckCircle2 size={25} className="text-green-600" />
                   ) : (
-                    <CirclePlay size={20} className="text-blue-500" />
+                    <CirclePlay size={25} className="text-blue-500" />
                   )}
                 </span>
               </div>
