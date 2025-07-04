@@ -26,8 +26,7 @@ function Course({ course }) {
 
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground hover:underline">
-            Learn the fundamentals of React including components, props, and
-            state.
+           {course.description}
           </p>
 
           {/* Avatar + Name */}

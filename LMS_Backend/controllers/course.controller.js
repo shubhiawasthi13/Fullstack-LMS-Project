@@ -6,7 +6,7 @@ import {
 } from "../utils/cloudinary.js";
 import { Lecture } from "../modal/lecture.modal.js";
 import { CoursePurchase } from "../modal/coursePurchase.modal.js";
-
+import { populate } from "dotenv";
 
 export const createCourse = async (req, res) => {
   try {
@@ -56,6 +56,46 @@ export const getCreatorCourse = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to get courses",
+    });
+  }
+};
+
+export const searchCourse = async (req, res) => {
+  try {
+    const { query = "", categories = [], sortByPrice = "" } = req.query;
+
+    // create serch query
+    const searchCriteria = {
+      isPublished: true,
+      $or: [
+        { courseTitle: { $regex: query, $options: "i" } },
+        { subTitle: { $regex: query, $options: "i" } },
+        { category: { $regex: query, $options: "i" } },
+      ],
+    };
+    // if categoeryies selected
+    if (categories.length > 0) {
+      searchCriteria.category = { $in: categories };
+    }
+
+    // defining sorting order
+    const sortOptions = {};
+    if (sortByPrice === "low") {
+      sortOptions.coursePrice = 1; // sort by price in ascending order
+    } else if (sortByPrice === "high") {
+      sortOptions.coursePrice = -1; // sort by price in descending order
+    }
+    let courses = await Course.find(searchCriteria)
+      .populate({ path: "creator", select: "name photoUrl" })
+      .sort(sortOptions);
+    return res.status(200).json({
+      courses: courses || [],
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Course not found",
     });
   }
 };
@@ -378,7 +418,6 @@ export const deleteCourse = async (req, res) => {
     });
   }
 };
-
 
 export const getPublishedCourse = async (req, res) => {
   try {
