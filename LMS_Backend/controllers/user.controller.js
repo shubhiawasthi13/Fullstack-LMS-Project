@@ -90,7 +90,7 @@ export const logOut = async (_, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     const userId = req.id;
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId).select("-password").populate("enrollCourses");
     if (!user) {
       return res.status(500).json({
         success: false,

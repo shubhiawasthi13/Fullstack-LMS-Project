@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import Course from './Course'; // Reuse your existing course card
+import { useLoadUserQuery } from '@/features/api/authApi';
 
 function MyLearning() {
-  const isLoading = false;
-  const myCourses = []; 
 
+  const {data, isLoading} = useLoadUserQuery();
+  const myLearning = data?.user.enrollCourses || [];
 
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
@@ -18,8 +19,8 @@ function MyLearning() {
             ? Array.from({ length: 4 }).map((_, index) => (
                 <CourseSkeleton key={index} />
               )):
-              myCourses.length === 0 ? (<p>You are not enrolled in any courses</p>) :(
-                 myCourses.map((course, index) => <Course key={index} course={course} />)
+              myLearning.length === 0 ? (<p>You are not enrolled in any courses</p>) :(
+                 myLearning.map((course, index) => <Course key={index} course={course} />)
               )
             
         }

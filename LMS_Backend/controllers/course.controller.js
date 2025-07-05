@@ -6,7 +6,7 @@ import {
 } from "../utils/cloudinary.js";
 import { Lecture } from "../modal/lecture.modal.js";
 import { CoursePurchase } from "../modal/coursePurchase.modal.js";
-import { populate } from "dotenv";
+import { User } from "../modal/user.modal.js";
 
 export const createCourse = async (req, res) => {
   try {
@@ -62,9 +62,10 @@ export const getCreatorCourse = async (req, res) => {
 
 export const searchCourse = async (req, res) => {
   try {
-    const { query = "", categories = [], sortByPrice = "" } = req.query;
+    const { query = "", categories = "", sortByPrice = "" } = req.query;
+    const categoryArray = categories ? categories.split(",") : [];
 
-    // create serch query
+    // Build search query
     const searchCriteria = {
       isPublished: true,
       $or: [
@@ -73,21 +74,20 @@ export const searchCourse = async (req, res) => {
         { category: { $regex: query, $options: "i" } },
       ],
     };
-    // if categoeryies selected
-    if (categories.length > 0) {
-      searchCriteria.category = { $in: categories };
+
+    if (categoryArray.length > 0) {
+      searchCriteria.category = { $in: categoryArray };
     }
 
-    // defining sorting order
+    // Sorting logic
     const sortOptions = {};
-    if (sortByPrice === "low") {
-      sortOptions.coursePrice = 1; // sort by price in ascending order
-    } else if (sortByPrice === "high") {
-      sortOptions.coursePrice = -1; // sort by price in descending order
-    }
-    let courses = await Course.find(searchCriteria)
+    if (sortByPrice === "low") sortOptions.coursePrice = 1;
+    else if (sortByPrice === "high") sortOptions.coursePrice = -1;
+
+    const courses = await Course.find(searchCriteria)
       .populate({ path: "creator", select: "name photoUrl" })
       .sort(sortOptions);
+
     return res.status(200).json({
       courses: courses || [],
     });
@@ -401,7 +401,11 @@ export const deleteCourse = async (req, res) => {
     // 🔥 Delete course purchases
     await CoursePurchase.deleteMany({ courseId });
 
-    // TODO: Delete other related data like reviews, progress, etc.
+    // ✅ Remove course from users' enrollCourse array
+    await User.updateMany(
+      { enrollCourse: courseId },
+      { $pull: { enrollCourse: courseId } }
+    );
 
     // 🔥 Delete the course itself
     await Course.findByIdAndDelete(courseId);

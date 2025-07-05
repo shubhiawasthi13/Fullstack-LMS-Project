@@ -116,7 +116,7 @@ export const stripeWebHook = async (req, res) => {
       await purchase.save();
       await User.findByIdAndUpdate(
         purchase.userId,
-        { $addToSet: { enrolledCourses: purchase.courseId._id } },
+        { $addToSet: { enrollCourses: purchase.courseId._id } },
         { new: true }
       );
       await Course.findByIdAndUpdate(

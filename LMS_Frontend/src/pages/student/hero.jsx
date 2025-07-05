@@ -46,6 +46,7 @@ export default function Hero() {
         <Button
           size="lg"
           className="text-lg flex items-center gap-2 mt-4 sm:mt-6"
+          onClick={() => navigate(`/course/search?query`)}
         >
           Explore Courses
         </Button>

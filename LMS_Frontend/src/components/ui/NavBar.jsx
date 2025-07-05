@@ -17,27 +17,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 
-
 export default function Navbar() {
   const { darkMode, setDarkMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const {user} = useSelector(store=>store.auth);
+  const { user } = useSelector((store) => store.auth);
   const role = "instructor";
   const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
 
   const navigate = useNavigate();
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
   useEffect(() => {
     if (isSuccess) {
       toast.success(data.message || "user logout");
-      dispatch(userLoggedOut())
+      dispatch(userLoggedOut());
       navigate("/");
     }
   }, [isSuccess]);
 
   const logoutHandler = async () => {
     await logoutUser();
-    
   };
 
   return (
@@ -50,7 +48,9 @@ const dispatch = useDispatch();
               size={30}
               className="text-blue-600 dark:text-blue-400"
             />
-            <span className="text-xl font-bold"><Link to = "/">GrowSkill</Link></span>
+            <span className="text-xl font-bold">
+              <Link to="/">GrowSkill</Link>
+            </span>
           </div>
 
           {/* Right Side Icons */}
@@ -61,45 +61,50 @@ const dispatch = useDispatch();
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Avatar className="cursor-pointer">
-                      <AvatarImage src={user?.photoUrl || "https://github.com/shadcn.png"} />
+                      <AvatarImage
+                        src={user?.photoUrl || "https://github.com/shadcn.png"}
+                      />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-64" align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuGroup>
-                      <DropdownMenuItem>
-                        <Link to="/my-learning" className="w-full">
-                          My Learning
-                        </Link>
-                      </DropdownMenuItem>
+                      {user?.role === "student" && (
+                        <DropdownMenuItem>
+                          <Link to="/my-learning" className="w-full">
+                            My Learning
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+
                       <DropdownMenuItem>
                         <Link to="/profile" className="w-full">
                           Edit Profile
                         </Link>
                       </DropdownMenuItem>
-                      {role === "instructor" && (
-                        <DropdownMenuItem>
-                           {user?.role === "instructor" &&(
-                             <Link to="/dashboard" className="w-full">
+
+                      <DropdownMenuItem>
+                        {user?.role === "instrutor" && (
+                          <Link to="/admin/dashboard" className="w-full">
                             Dashboard
                           </Link>
-                           )
-                           }
+                        )}
+                      </DropdownMenuItem>
 
-                        </DropdownMenuItem>
-                      )}
                       <DropdownMenuItem onClick={logoutHandler}>
-                      <Button>  Log out</Button>
+                        <Button> Log out</Button>
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
                 <>
-                  <Button variant="outline"><Link to="/login" className="w-full">
-                          login/signup
-                        </Link></Button>
+                  <Button variant="outline">
+                    <Link to="/login" className="w-full">
+                      login/signup
+                    </Link>
+                  </Button>
                   {/* <Button>Signup</Button> */}
                 </>
               )}
@@ -124,64 +129,64 @@ const dispatch = useDispatch();
         </div>
 
         {/* Mobile Navigation Menu */}
-      {menuOpen && (
-  <ul className="md:hidden px-6 pb-4 pt-2 flex flex-col gap-3 font-medium bg-white dark:bg-gray-900 absolute w-full left-0 z-40 shadow-md">
-    {user ? (
-      <>
-        <li>
-          <Link
-            to="/my-learning"
-            className="block py-2 hover:text-blue-500 transition"
-            onClick={() => setMenuOpen(false)}
-          >
-            My Learning
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/profile"
-            className="block py-2 hover:text-blue-500 transition"
-            onClick={() => setMenuOpen(false)}
-          >
-            Edit Profile
-          </Link>
-        </li>
-        {user?.role === "instructor" && (
-          <li>
-            <Link
-              to="/dashboard"
-              className="block py-2 hover:text-blue-500 transition"
-              onClick={() => setMenuOpen(false)}
-            >
-              Dashboard
-            </Link>
-          </li>
+        {menuOpen && (
+          <ul className="md:hidden px-6 pb-4 pt-2 flex flex-col gap-3 font-medium bg-white dark:bg-gray-900 absolute w-full left-0 z-40 shadow-md">
+            {user ? (
+              <>
+                <li>
+                  {user?.role === "student" && (
+                    <Link
+                      to="/my-learning"
+                      className="block py-2 hover:text-blue-500 transition"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      My Learning
+                    </Link>
+                  )}
+                </li>
+                <li>
+                  <Link
+                    to="/profile"
+                    className="block py-2 hover:text-blue-500 transition"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Edit Profile
+                  </Link>
+                </li>
+                {user?.role === "instrutor" && (
+                  <li>
+                    <Link
+                      to="/admin/dashboard"
+                      className="block py-2 hover:text-blue-500 transition"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                )}
+                <li
+                  className="block py-2 hover:text-blue-500 cursor-pointer"
+                  onClick={() => {
+                    logoutHandler();
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Button>Log out</Button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  to="/login"
+                  className="block py-2 hover:text-blue-500 transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <Button>Login / Signup</Button>
+                </Link>
+              </li>
+            )}
+          </ul>
         )}
-        <li
-          className="block py-2 hover:text-blue-500 cursor-pointer"
-          onClick={() => {
-            logoutHandler();
-            setMenuOpen(false);
-          }}
-        >
-          <Button>Log out</Button>
-         
-        </li>
-      </>
-    ) : (
-      <li>
-        <Link
-          to="/login"
-          className="block py-2 hover:text-blue-500 transition"
-          onClick={() => setMenuOpen(false)}
-        >
-     <Button>Login / Signup</Button>
-        </Link>
-      </li>
-    )}
-  </ul>
-)}
-
       </nav>
     </>
   );

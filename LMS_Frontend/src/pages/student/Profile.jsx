@@ -135,23 +135,24 @@ function Profile() {
             </Dialog>
           </CardContent>
         </Card>
-
-        <div className="mt-10">
-          <h5 className="font-semibold text-gray-900 dark:text-white mb-4 ml-1">
-            Courses You Are Enrolled In
-          </h5>
-          {user.enrollCourses.length === 0 ? (
-            <p className="text-gray-600 dark:text-gray-400 ml-1">
-              You are not enrolled in any courses.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {user.enrollCourses.map((course) => (
-                <Course course={course} key={course._id} />
-              ))}
-            </div>
-          )}
-        </div>
+        {user?.role === "student" && (
+          <div className="mt-10">
+            <h5 className="font-semibold text-gray-900 dark:text-white mb-4 ml-1">
+              Courses You Are Enrolled In
+            </h5>
+            {user.enrollCourses?.length === 0 ? (
+              <p className="text-gray-600 dark:text-gray-400 ml-1">
+                You are not enrolled in any courses.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {user.enrollCourses?.map((course) => (
+                  <Course course={course} key={course._id} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
